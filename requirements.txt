@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic-ai
+lancedb
+google-generativeai
+python-dotenv
+streamlit
+ipykernel
+pandas
