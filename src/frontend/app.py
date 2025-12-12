@@ -1,7 +1,15 @@
 import streamlit as st
 import requests
+import os
+from dotenv import load_dotenv
 
-API_URL = "http://127.0.0.1:8000/rag"
+# Ladda env-variabler (.env)
+load_dotenv()
+
+# Azure Function URL + Function Key (samma mönster som läraren)
+API_URL = f"http://localhost:7071/rag?code={os.getenv('FUNCTION_APP_API')}"
+# När deployad:
+# API_URL = f"https://rag-youtuber-said.azurewebsites.net/api/rag?code={os.getenv('FUNCTION_APP_API')}"
 
 # -------------------------------
 # Streamlit Page Config
@@ -76,7 +84,6 @@ st.write("AI-assistenten söker igenom kursens material och svarar direkt på di
 # USER INPUT
 # -------------------------------
 user_input = st.text_input("", placeholder="Skriv din fråga här...")
-
 send = st.button("Skicka")
 
 # -------------------------------
@@ -90,14 +97,20 @@ if send and user_input.strip() != "":
             data = response.json()
 
             # User bubble
-            st.markdown(f"<div class='chat-bubble-user'>🧑‍💻 {user_input}</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div class='chat-bubble-user'>🧑‍💻 {user_input}</div>",
+                unsafe_allow_html=True
+            )
 
             # AI bubble
-            st.markdown(f"<div class='chat-bubble-ai'>🤖 {data['answer']}</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div class='chat-bubble-ai'>🤖 {data['answer']}</div>",
+                unsafe_allow_html=True
+            )
 
             # Sources
             st.subheader("📚 Källor")
             for src in data["sources"]:
                 st.write(f"- {src}")
         else:
-            st.error("API-anropet misslyckades. Kontrollera att backend körs.")
+            st.error("API-anropet misslyckades. Kontrollera Function Key och backend.")
