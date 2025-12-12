@@ -4,6 +4,7 @@ from pydantic_ai import Agent
 from dotenv import load_dotenv
 import google.generativeai as genai
 import os
+from pathlib import Path  # ✅ NY
 
 # Import retriever
 from ..retrieval.retriever import retrieve_relevant_docs
@@ -20,6 +21,16 @@ if not GOOGLE_API_KEY:
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # -------------------------------------------------
+# Load persona
+# -------------------------------------------------
+PERSONA_PATH = Path(__file__).parent / "persona" / "default.txt"
+
+if PERSONA_PATH.exists():
+    PERSONA_TEXT = PERSONA_PATH.read_text(encoding="utf-8").strip()
+else:
+    PERSONA_TEXT = ""
+
+# -------------------------------------------------
 # Output schema
 # -------------------------------------------------
 class Answer(BaseModel):
@@ -27,13 +38,15 @@ class Answer(BaseModel):
     sources: list[str]
 
 # -------------------------------------------------
-# System prompt
+# System prompt (persona + instruktioner)
 # -------------------------------------------------
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT = f"""
+{PERSONA_TEXT}
+
 Du är en hjälpsam AI-assistent som svarar baserat på Said Abdis kursmaterial.
 Använd alltid dokumenten som hämtas av retrieval.
 Skriv tydligt, korrekt och ange källor i svaret.
-"""
+""".strip()
 
 # -------------------------------------------------
 # Build agent
@@ -72,7 +85,6 @@ Svara utförligt och ange vilka filer du använde.
     # -------------------------------------------------
     # UNIVERSAL RESULT EXTRACTION
     # -------------------------------------------------
-
     if hasattr(result, "output_text"):
         output_text = result.output_text
     elif hasattr(result, "text"):
